@@ -7,17 +7,30 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 
 fun main(args: Array<String>) {
+    // Check the arguments.
     if (args.size != 2) {
         println("Parameters: <inputFile> <outputFile>")
+        return
     }
     val inputFile = File(args[0])
     val outputFile = File(args[1])
+
+    // Check if the input file exists and is valid.
     if (inputFile.exists() && inputFile.toString().endsWith(".json")) {
+        println("Loading translation file \"$inputFile\"...")
+
+        // Loading translation entries from the input file.
         val translations: Map<String, String>? = readJsonFile(inputFile.toString())
-        val consoleInput = Scanner(System.`in`)
         if (translations != null) {
+            println("All translation entries:")
+            translations.forEach { entry ->
+                println(entry.key + " | " + entry.value)
+            }
             val translatedEntries = HashMap<String, String>()
+            val consoleInput = Scanner(System.`in`)
+
             for (translation in translations) {
+                println("Loading translation line " + (translatedEntries.size + 1))
                 val translationKey = translation.key
                 val translationValue = translation.value
                 println("Translation Key: $translationKey")
@@ -29,6 +42,8 @@ fun main(args: Array<String>) {
                 }
             }
             consoleInput.close()
+
+            println("Writing content into the output file \"$outputFile\"...")
             if(!outputFile.parentFile.exists()){
                 outputFile.parentFile.mkdirs()
             }
@@ -36,6 +51,7 @@ fun main(args: Array<String>) {
                 outputFile.delete()
             }
             outputFile.createNewFile()
+
             val gson = GsonBuilder().setPrettyPrinting().create()
             val json = gson.toJson(translatedEntries)
             val writer: Writer = OutputStreamWriter(FileOutputStream(outputFile), StandardCharsets.UTF_8)
